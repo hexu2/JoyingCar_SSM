@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hexu.joycar.mapper.UserMapper">
+	<resultMap type="UserWrapper" id="userWrapperMap">
+		<id property="userId" column="user_Id"/>
+		<result property="userAccount" column="user_account"/>
+		<result property="userPassword" column="user_password"/>
+		<result property="userPicture" column="user_picture"/>
+		<result property="phoneNumber" column="phone_number"/>
+		<result property="cardNumber" column="car_number"/>
+		<result property="accountStatus" column="account_status"/>
+		<result property="createTime" column="create_time"/>
+		<result property="modifiedTime" column="modified_time"/>
+		<!-- 关联属性 关联手机用户表 -->
+		<result property="accountStatusName" column="account_status_name"/>
+		<result property="phoneUserName" column="phone_user_name"/>
+		<result property="phoneUserSex" column="phone_user_sex"/>
+		<result property="phoneUserSexName" column="phone_user_sex_name"/>
+		<result property="phoneUserAge" column="phone_user_age"/>
+		<result property="idNumber" column="id_number"/>
+		<result property="phoneFee" column="phone_fee"/>
+		<result property="phoneStatus" column="phone_status"/>
+		<result property="phoneStatusName" column="phone_status_name"/>
+	</resultMap>
+	
+	<!-- 
+	 * 根据账号查询用户
+	 * @param userAccount
+	 * @param userWrapperMap
+	 -->
+	<select id="queryByAccount" parameterType="string" resultMap="userWrapperMap">
+		select 
+		       user_Id,
+		       user_account,
+		       user_password,
+		       user_picture,
+		       phone_number,
+		       car_number,
+		       account_status,
+		       account_status_name,
+		       create_time,
+		       modified_time,
+		       phone_user_name,
+		       id_number,
+		       phone_user_sex,
+		       phone_user_sex_name,
+		       phone_user_age,
+		       phone_fee,
+		       phone_status,
+		       phone_status_name,
+		       rn
+		       from v$user
+		       where user_account = #{userAccount}
+	</select>
+	
+	<!-- 
+	 * 根据账号和密码查询用户
+	 * key: userAccount
+	 * key: userPassword
+	 * @param map
+	 * @return UserWrapper
+	 -->
+	<select id="queryByAccountAndPwd" parameterType="map" resultMap="userWrapperMap">
+		select 
+		       user_Id,
+		       user_account,
+		       user_password,
+		       user_picture,
+		       phone_number,
+		       car_number,
+		       account_status,
+		       account_status_name,
+		       create_time,
+		       modified_time,
+		       phone_user_name,
+		       id_number,
+		       phone_user_sex,
+		       phone_user_sex_name,
+		       phone_user_age,
+		       phone_fee,
+		       phone_status,
+		       phone_status_name,
+		       rn
+		       from v$user
+		       where user_account = #{userAccount} and  user_password = #{userPassword}
+	</select>
+
+	<!-- 新增管理员用户 -->
+	<insert id="add" parameterType="User">
+	  insert into t_user
+			(user_Id,
+			 user_account,
+			 user_password,
+			 <if test="userPicture != null">
+			 	user_picture,
+			 </if>
+			 <if test="cardNumber != null">
+			 	car_number,
+			 </if>
+			 phone_number,
+			 account_status,
+			 create_time,
+			 modified_time)
+       values
+       		(seq_user.nextval,
+       		 #{userAccount},
+			 #{userPassword},
+			 <if test="userPicture != null">
+			 	 #{userPicture},
+			 </if>
+			 <if test="cardNumber != null">
+			 	 #{cardNumber},
+			 </if>
+			 #{phoneNumber},
+			 #{accountStatus},
+			 sysdate,
+       		 sysdate)    			
+	</insert>
+
+	<!-- 
+	 * 根据id修改user用户
+	 * @param user
+	 -->
+	<update id="update" parameterType="User">
+		update t_user set
+			   user_account = #{userAccount},
+		       user_password = #{userPassword},
+		       user_picture = #{userPicture},
+		       phone_number = #{phoneNumber},
+		       car_number = #{cardNumber},
+		       account_status = #{accountStatus},
+		       modified_time =sysdate
+		       where user_Id = #{userId}
+	</update>
+	<!-- 
+	 * 根据条件分页查询
+	 * userAccount，模糊匹配
+	 * phoneNumber，手机号
+	 * accountStatus,0：正常 1：已注销
+	 * pageModel
+	 -->
+	<select id="queryAllByConditions" parameterType="map" resultMap="userWrapperMap">
+		select 
+		       user_Id,
+		       user_account,
+		       user_password,
+		       user_picture,
+		       phone_number,
+		       car_number,
+		       account_status,
+		       account_status_name,
+		       create_time,
+		       modified_time,
+		       phone_user_name,
+		       id_number,
+		       phone_user_sex,
+		       phone_user_sex_name,
+		       phone_user_age,
+		       phone_fee,
+		       phone_status,
+		       phone_status_name
+		       from(
+		          select 
+		                 user_Id,
+		                 user_account,
+		                 user_password,
+		                 user_picture,
+		                 phone_number,
+		                 car_number,
+		                 account_status,
+		                 account_status_name,
+		                 create_time,
+		                 modified_time,
+		                 phone_user_name,
+		                 id_number,
+		                 phone_user_sex,
+		                 phone_user_sex_name,
+		                 phone_user_age,
+		                 phone_fee,
+		                 phone_status,
+		                 phone_status_name,
+		                 rownum as rn
+		                 from(
+		                    select 
+		                           user_Id,
+		                           user_account,
+		                           user_password,
+		                           user_picture,
+		                           phone_number,
+		                           car_number,
+		                           account_status,
+		                           account_status_name,
+		                           create_time,
+		                           modified_time,
+		                           phone_user_name,
+		                           id_number,
+		                           phone_user_sex,
+		                           phone_user_sex_name,
+		                           phone_user_age,
+		                           phone_fee,
+		                           phone_status,
+		                           phone_status_name
+		                           from v$user
+		                           <where>
+		                           		<if test="userAccount != null">
+				                           user_account like #{userAccount} 
+		                           		</if>
+		                           		<if test="phoneNumber != null">
+				                           and phone_number = #{phoneNumber}
+		                           		</if>
+		                           		<if test="accountStatus != null">
+				                           and account_status = #{accountStatus}
+		                           		</if>
+		                           </where>
+		                 )
+		       )
+			   where rn > (#{pageModel.pageNo}-1)*#{pageModel.pageSize}
+		       <![CDATA[and rn <= #{pageModel.pageNo}*#{pageModel.pageSize}]]>
+	</select>
+	
+	<!-- 
+	 * userAccount，模糊匹配
+	 * phoneNumber，手机号
+	 * accountStatus,0：正常 1：已注销
+	 -->
+	<select id="getCntByConditions" parameterType="map" resultType="int">
+		select count(0)
+		       from v$user
+		       <where>
+		             <if test="userAccount != null">
+				           user_account like #{userAccount} 
+		             </if>
+		             <if test="phoneNumber != null">
+				           and phone_number = #{phoneNumber}
+		             </if>
+		             <if test="accountStatus != null">
+				           and account_status = #{accountStatus}
+		             </if>
+		       </where>
+	</select>
+	
+</mapper>

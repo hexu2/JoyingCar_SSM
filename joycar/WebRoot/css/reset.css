@@ -1,0 +1,6 @@
+@CHARSET "UTF-8";
+
+body,div,ul,li ,h1,table,tr,td{
+	margin: 0px;
+	padding: 0px;
+}

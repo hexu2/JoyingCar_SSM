@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hexu.joycar.mapper.RechargeCardMapper">
+	<resultMap type="RechargeCardWrapper" id="rechargeCardWrapperMap">
+		<id property="cardId" column="card_id"/>
+		<result property="cardNumber" column="card_number"/>
+		<result property="cardPassword" column="card_password"/>
+		<result property="cardValue" column="card_value"/>
+		<result property="startTime" column="start_time"/>
+		<result property="endTime" column="end_time"/>
+		<result property="cardStatus" column="card_status"/>
+		<result property="createTime" column="create_time"/>
+		<result property="modifiedTime" column="modified_time"/>
+		
+		<!-- 关联属性 -->
+		<result property="cardStatusName" column="card_status_name"/>
+
+	</resultMap>
+	
+	<!-- 
+	 * 多条件查询所有（导出时使用）
+	 * cardNumber ，完全匹配
+	 * cardStatus，0：正常 1：已使用 2：已过期
+	 -->
+	<select id="queryByConditionForExport"  parameterType="map" resultMap="rechargeCardWrapperMap">
+		select
+		     card_id,
+		     card_number,
+		     card_password,
+		     card_value,
+		     start_time,
+		     end_time,
+		     card_status,
+		     create_time,
+		     card_status_name,
+		     modified_time
+		     from v$rechargecard
+			 <where>
+					<if test="cardNumber != null">
+						  card_number = #{cardNumber}
+					</if>
+					<if test="cardStatus != null">
+						  and card_status = #{cardStatus}
+					</if>
+			 </where>
+	</select>
+	
+	<!-- 
+	/**
+	 * 根据条件分页查询
+	 * cardNumber ，完全匹配
+	 * cardStatus，0：正常 1：已使用 2：已过期
+	 * pageModel
+	 */
+	 -->
+	<select id="queryAllByConditions" parameterType="map" resultMap="rechargeCardWrapperMap">
+		select
+		       card_id,
+		       card_number,
+		       card_password,
+		       card_value,
+		       start_time,
+		       end_time,
+		       card_status,
+		       create_time,
+		       card_status_name,
+		       modified_time
+		       from(
+		          select
+		                 card_id,
+		                 card_number,
+		                 card_password,
+		                 card_value,
+		                 start_time,
+		                 end_time,
+		                 card_status,
+		                 create_time,
+		                 card_status_name,
+		                 modified_time,
+		                 rownum as rn
+		                 from(
+		                    select
+		                           card_id,
+		                           card_number,
+		                           card_password,
+		                           card_value,
+		                           start_time,
+		                           end_time,
+		                           card_status,
+		                           create_time,
+		                           card_status_name,
+		                           modified_time
+		                           from v$rechargecard
+						           <where>
+						             	<if test="cardNumber != null">
+						             		card_number = #{cardNumber}
+						             	</if>
+						             	<if test="cardStatus != null">
+						             		and card_status = #{cardStatus}
+						             	</if>
+						           </where>
+		                 )  
+		       )where rn > (#{pageModel.pageNo}-1)*#{pageModel.pageSize}
+			   <![CDATA[and rn <= #{pageModel.pageNo}*#{pageModel.pageSize}]]>
+
+	</select>
+	
+	<!-- 
+	 * 条件查询的结果总数
+	 * cardNumber ，完全匹配
+	 * cardStatus，0：正常 1：已使用 2：已过期
+	 -->
+	<select id="getCntByConditions" parameterType="map" resultType="int">
+		select count(0)
+		from v$rechargecard
+		<where>
+			<if test="cardNumber != null">
+				card_number = #{cardNumber}
+			</if>
+			<if test="cardStatus != null">
+				and card_status = #{cardStatus}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 
+	 * 根据卡号和密码查询密保卡
+	 * cardNumber
+	 * cardPassword
+	 * @param map
+	 -->
+	<select id="queryByCardNumberAndPassword" parameterType="map" resultMap="rechargeCardWrapperMap"> 
+		select
+		       card_id,
+		       card_number,
+		       card_password,
+		       card_value,
+		       start_time,
+		       end_time,
+		       card_status,
+		       create_time,
+		       card_status_name,
+		       modified_time
+		       from v$rechargecard
+		       where card_number=#{cardNumber} 
+		       and card_password = #{cardPassword}
+	</select>
+	
+	<!-- 
+	 * 批量生成充值卡
+	 * cardNumbers  生成的数量
+	 * cardValue 金额
+	 * startTime 开始时间
+	 * endTime 结束时间
+	 * @param map
+	 -->
+	<insert id="addRechargeCards" parameterType="map" statementType="CALLABLE">
+		{call p_add_recharge_cards(
+			#{cardNumbers,mode=IN,javaType=int,jdbcType=INTEGER},
+			#{cardValue,mode=IN,javaType=int,jdbcType=INTEGER},
+			#{startTime,mode=IN,javaType=date,jdbcType=DATE},
+			#{endTime,mode=IN,javaType=date,jdbcType=DATE}
+		)}
+	</insert>
+	
+	<!-- 
+	 * 根据id修改充值卡（充值时使用）
+	 * cardId
+	 * cardValue
+	 * cardStatus
+	 * @param map
+	 -->
+	<update id="updateRechargeCard">
+		update t_recharge_card
+		       set card_value = #{cardValue},
+		           card_status = #{cardStatus},
+		           modified_time = sysdate
+		           where card_id = #{cardId}
+	</update>
+	
+</mapper>
+

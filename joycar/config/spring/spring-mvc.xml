@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+           http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	 <context:component-scan base-package="com.hexu.joycar"/>
+	 <mvc:annotation-driven conversion-service="conversionService"/>
+	 
+	 <!-- 重新配置视图解析器 -->
+	 <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+	 	<property name="prefix" value="/hexu/"/>
+	 	<property name="suffix" value=".jsp"/>
+	 </bean>
+	 
+	 <!-- 注册转换器com\hexu\joycar\converter\DateConverter.java-->
+	 <bean id = "conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+	      <property name="converters">
+	      		<list>	
+	      			 <bean class="com.hexu.joycar.converter.DateConverter"/>
+	      		</list>
+	      </property>
+	 </bean>
+	 
+	 <!-- 乐豆系统处理器异常解析器 
+	 <bean id="joybeansHandlerExceptionResolver" class="com.njwb.joybeans.exception.JoybeansHandlerExceptionResolver"/>
+	/joycar/src/com/hexu/joycar/exception/JoybeansHandlerExceptionResolver.java
+	-->
+		
+	 <!-- 注册自定义处理器异常解析器 /joycar/src/com/hexu/joycar/exception/JoyCarHandlerExceptionResolver.java-->
+	 <bean id="JoyCarHandlerExceptionResolver" class="com.hexu.joycar.exception.JoyCarHandlerExceptionResolver"></bean>
+
+     <!-- 配置文件上传解析器 for userPicture-->
+     <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+           <!-- 支持最大上传文件为1M  -->
+     	   <property name="maxUploadSize" value="1048576"/>
+     	   <!-- 
+     	              内存中的缓冲区
+     	    -->
+     	   <property name="maxInMemorySize" value="2048"/>
+     	   <property name="defaultEncoding" value="utf-8"/>
+     </bean>
+     
+     <!-- 配置校验器 -->
+     <bean id = "validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <!-- 告诉springmvc，有谁来处理校验工作 -->
+     	<property name="providerClass" value="org.hibernate.validator.HibernateValidator"/>
+     	<!-- 校验资源文件 -->
+     	<property name="validationMessageSource" ref="validationMessageSource"/>
+     </bean>
+     
+     <bean id="validationMessageSource"  class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+     	 <!-- 关联校验资源文件的位置
+     	     务必记住，不能加.properties后缀，否则就挂了
+     	  -->
+     	 <property name="basenames">
+     	 		<list>
+     	 			<value>classpath:resource/GameValidationResource</value>
+     	 		</list>
+     	 </property>
+     	 <property name="fileEncodings" value="utf-8"/>
+     </bean>
+</beans>           

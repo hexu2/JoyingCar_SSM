@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hexu.joycar.mapper.AdminMapper">
+	<resultMap type="AdminWrapper" id="adminWrapperMap">
+		<id property="adminId" column="admin_Id"/>
+		<result property="adminAccount" column="admin_account"/>
+		<result property="adminPassword" column="admin_password"/>
+		<result property="accountStatus" column="account_status"/>
+		<result property="createTime" column="create_time"/>
+		<result property="modifiedTime" column="modified_time"/>
+		
+		<result property="accountStatusName" column="account_status_name"/>
+	</resultMap>
+	
+	<!-- 分页查询所有管理员用户 -->
+	<select id="queryAll" parameterType="PageModel" resultMap="adminWrapperMap">
+		select 
+		       admin_Id,
+		       admin_account,
+		       admin_password,
+		       account_status,
+		       account_status_name,
+		       create_time,
+		       modified_time
+		       from v$admin
+		       where rn  > (#{pageNo}-1)*#{pageSize} 
+		       <![CDATA[and rn <= #{pageNo}*#{pageSize}]]>
+	</select>
+	
+	<!--  
+	 * 根据条件分页查询
+	 * adminAccount ，模糊匹配
+	 * accountStatus，0：正常 1：已注销
+	 * pageModel
+	 * @param map
+	 -->
+	<select id="queryAllByConditions" parameterType="map" resultMap="adminWrapperMap">
+		select 
+		       admin_Id,
+		       admin_account,
+		       admin_password,
+		       account_status,
+		       account_status_name,
+		       create_time,
+		       modified_time
+		       from(
+		          select
+		                 admin_Id,
+		                 admin_account,
+		                 admin_password,
+		                 account_status,
+		                 create_time,
+		                 modified_time,
+		                 account_status_name,
+		                 rownum as rn
+		                 from(
+		                    select 
+		                           admin_Id,
+		                           admin_account,
+		                           admin_password,
+		                           account_status,
+		                           account_status_name,
+		                           create_time,
+		                           modified_time
+		                           from v$admin
+						           <where>
+						             	<if test="adminAccount != null">
+						             		admin_account like #{adminAccount}
+						             	</if>
+						             	<if test="accountStatus != null">
+						             		and account_status = #{accountStatus}
+						             	</if>
+						           </where>
+		                 )
+		       )
+			   where rn > (#{pageModel.pageNo}-1)*#{pageModel.pageSize}
+			   <![CDATA[and rn <= #{pageModel.pageNo}*#{pageModel.pageSize}]]>
+	</select>
+	
+	<!-- 
+	 * 条件查询的结果总数
+	 * adminAccount ，模糊匹配
+	 * accountStatus，0：正常 1：已注销
+	 * @param map
+	 -->
+	<select id="getCntByConditions" parameterType="map" resultType="int">
+		select count(0)
+		from v$admin
+		<where>
+			<if test="adminAccount != null">
+				admin_account like #{adminAccount}
+			</if>
+			<if test="accountStatus != null">
+				and account_status = #{accountStatus}
+			</if>
+		</where>
+	
+	</select>
+	
+	<!-- 根据用户名和密码查询管理员用户  -->
+	<select id="queryByAccountAndPassword" parameterType="Admin" resultMap="adminWrapperMap">
+		select 
+		       admin_Id,
+		       admin_account,
+		       admin_password,
+		       account_status,
+		       account_status_name,
+		       create_time,
+		       modified_time
+		       from v$admin
+		       where admin_account = #{adminAccount} and admin_password = #{adminPassword}
+	
+	</select>
+	
+	<!-- 根据账号查询管理员用户  -->
+	<select id="queryByAccount" parameterType="string" resultMap="adminWrapperMap">
+		select 
+		       admin_Id,
+		       admin_account,
+		       admin_password,
+		       account_status,
+		       account_status_name,
+		       create_time,
+		       modified_time
+		       from v$admin
+		       where admin_account = #{adminAccount}
+	</select>
+	
+	<!-- 新增管理员用户 -->
+	<insert id="add" parameterType="Admin">
+		insert into t_admin(
+						admin_Id,
+						admin_account,
+						admin_password,
+						account_status,
+						create_time,
+						modified_time)
+       	values(seq_admin.nextval,
+       			#{adminAccount},
+       			#{adminPassword},
+       			#{accountStatus},
+       			sysdate,
+       			sysdate) 
+	</insert>
+	
+	<!-- 根据管理员id删除用户 -->
+	<delete id="delete" parameterType="int">
+		delete from t_admin where admin_id = #{adminId}
+	</delete>
+	
+	<!-- 根据id修改管理员用户 -->
+	<update id="update" parameterType="Admin">
+		update t_admin set 
+						admin_account = #{adminAccount},
+						admin_password = #{adminPassword},
+						account_status = #{accountStatus},
+						modified_time = sysdate
+			    		where admin_Id = #{adminId}
+	</update>
+</mapper>

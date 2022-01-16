@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hexu.joycar.mapper.ActionMapper">
+
+	
+	<!-- 
+	 * 条件查询的结果总数
+	 * userAccount ，完全匹配
+	 * recordNumber,罚单号
+	 * carNumber，车牌号
+	 * recordStatus，0：已缴费 1：未缴费 缴费状态
+	 -->
+	<select id="getCnt" resultType="int">
+		select count(0)
+		from t_action
+	</select>
+</mapper>

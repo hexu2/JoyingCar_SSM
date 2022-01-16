@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hexu.joycar.mapper.ProvinceMapper">
+	<resultMap type="Province" id="provinceMap">
+		<id property="provinceId" column="province_id"/>
+		<result property="provinceName" column="province_name"/>
+		<result property="createTime" column="create_time"/>
+		<result property="modifiedTime" column="modified_time"/>
+	</resultMap>
+	<!-- 
+	 * 根据id查询省份
+	 * @param provinceID
+	 -->
+	<select id="queryAllProvince" resultMap="provinceMap">
+		select 
+			province_id,
+			province_name,
+			create_time,
+			modified_time 
+			from t_province
+	</select>
+	
+</mapper>

@@ -1,0 +1,102 @@
+/**************图片虚拟路径配置说明****************/
+
+/*******用户头像图片路径********/
+(1)//Linux
+/home/soft01/joycar/userPicture/
+(2)//window7
+E\:/userPicture/
+(3)joybeans.properties
+uploadPath=/home/soft01/study/joybeanpicture/
+uploadPath=E\:/userPicture/
+
+http://127.0.0.1:8888/joycar/resource/a2.jpg
+
+
+/************server.xml配置修改*****************/
+//Linux学生机配置
+<Context path="/joycar/resource" docBase="/home/soft01/joycar/joybeanpicture/"></Context>
+
+//window7电脑配置(windows系统配置时候盘符后不要加\ 但是在myeclisp中需要加\)
+<Context path="/joycar/resource" docBase="E:/uploadPath=E\:/userPicture//"></Context>
+
+
+/************项目运用*****************/
+(1)
+     <!-- 配置文件上传解析器 -->
+     <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+           <!-- 支持最大上传文件为1M  -->
+     	   <property name="maxUploadSize" value="1048576"/>
+     	   <!-- 
+     	              内存中的缓冲区
+     	    -->
+     	   <property name="maxInMemorySize" value="2048"/>
+     	   <property name="defaultEncoding" value="utf-8"/>
+     </bean>
+     
+     
+(2)
+<Context path="/joycar/resource" docBase="E:/userPicture/"/>
+
+(3)页面
+  <script type="text/javascript">
+  		$(function(){
+			$("#file").blur(function(){
+				var str =  $("#file").val();
+				if($.trim(str) != ""){
+					$("#gamePicture").val(str);
+				}
+			});
+		});
+  </script>
+
+
+
+  				<td>
+					<input type="text" id="gamePicture" name="gamePicture" size="7"  readonly="readonly"/>
+					<input type="file" value="请选择文件" id="file" name="file"/>
+  				</td>
+  				
+ <form action="game/addGame.action" method="post" enctype="multipart/form-data">
+
+ (4)controller
+ 	//修改游戏查询
+	@RequestMapping(value="/queryForUpdateGame.action",method={RequestMethod.GET})
+	public String queryForUpdateGame(String gameId,HttpSession session)throws Exception{
+		
+		List<GameTypeWrapper> gameTypeWrapperList = gameTypeService.queryAllGametype();
+		
+		GameWrapper gameWrapper = gameService.queryByID(gameId);
+		
+		session.setAttribute("gameTypeWrapperList", gameTypeWrapperList);
+		session.setAttribute("gameWrapper", gameWrapper);
+		
+		return "gameManage/updateGame";
+	}
+	
+	//修改游戏//@RequestParam("file")CommonsMultipartFile file,
+	@RequestMapping(value="/updateGame.action",method={RequestMethod.POST})
+	public String updateGame(@RequestParam("file")CommonsMultipartFile file,Game game,Model model)throws Exception{
+		
+
+		
+		
+		if(!StringUtil.isEmpty(file.getOriginalFilename())){
+			//构造随机图片名
+			String randomStr = gameService.randomPicName();
+			String originalFilename = file.getOriginalFilename();
+			String [] ofn = originalFilename.split("\\.");
+			String gamegamePictureNew = randomStr+"."+ofn[1];
+			//修改游戏图片
+			game.setGamePicture(gamegamePictureNew);
+			
+			file.transferTo(new File(PropertiesUtil.getKey("uploadPath") + gamegamePictureNew));
+		}
+		
+		gameService.updateGameByID(game);
+		
+		model.addAttribute("operator", Constant.GAME_UPDATE);
+		
+		return "promote/success";
+	}
+ 
+ 

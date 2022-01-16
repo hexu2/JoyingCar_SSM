@@ -1,0 +1,42 @@
+@CHARSET "UTF-8";
+
+#login1 {
+	width: 400px;
+	height: 250px;
+	border: 1px solid black;
+	margin: 100px auto;
+	border-radius: 5%;
+	background-color: white;
+}
+
+#title {
+	width: 250px;
+	height: 40px;
+	line-height: 40px;
+	margin: 0px auto;
+	border: 1px solid #2299EE;
+	border-bottom-right-radius: 10%;
+	border-bottom-left-radius: 10%;
+	text-align: center;
+	background-color: #2299EE;
+	letter-spacing: 0.5em;
+	color: white;
+	font-size: 20px;
+}
+
+#loginTable1 {
+	margin: 0px auto;
+	border-spacing: 0px 10px;
+	text-align: center;
+}
+
+   body{
+   	 background-color: #0070A2;
+   }
+
+.btn {
+	background-color: #2299EE;
+	border-radius: 10%;
+	font-size: 16px;
+	color: white;
+}

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <context:property-placeholder location="classpath:mybatis/db.properties"/>
+    
+    <context:component-scan base-package="com.hexu.joycar"/>
+    
+    <!-- 配置sqlSessionFactory -->
+    <bean name="sqlSessionFactory" id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 依赖sqlMapConfig -->
+        <property name="configLocation" value="classpath:mybatis/sqlMapConfig.xml"/>
+        <!-- 使用数据库连接池 -->
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    
+    <!-- 
+       配置dataSource数据源
+     -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+         <property name="user" value="${db.user}"/>
+         <property name="password" value="${db.password}"/>
+         <property name="jdbcUrl" value="${db.jdbcUrl}"/>
+         <property name="driverClass" value="${db.driverClass}"/>
+         <!--  mybatis中的数据源配置需要删掉 -->
+         <!-- spring不直接认识${db.user},必须先将db.propertis导入到spring中来，才能认识 -->
+    </bean>
+    
+    
+    <!-- 
+       配置事务管理器
+     -->
+     <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+  		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	<!-- 启动spring 事务注解 -->
+	<tx:annotation-driven transaction-manager="txManager"/>
+	
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    	<property name="basePackage" value="com.hexu.joycar.mapper"/>
+    	<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+	
+	
+</beans>           

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hexu.joycar.mapper.RecordMapper">
+	<resultMap type="RecordWrapper" id="recordWrapperMap">
+		<id property="recordId" column="record_id"/>
+		<result property="recordNumber" column="record_number"/>
+		<result property="userAccount" column="user_account"/>
+		<result property="carNumber" column="car_number"/>
+		<result property="locationId" column="location_id"/>
+		<result property="actionId" column="action_id"/>
+		<result property="recordStatus" column="record_status"/>
+		<result property="recordDetail" column="record_detail"/>
+		<result property="picture" column="record_picture"/>
+		<result property="createTime" column="create_time"/>
+		<result property="modifiedTime" column="modified_time"/>
+		
+		<!-- 关联属性 -->
+		<result property="locationName" column="location_name"/>
+		<result property="actionName" column="action_name"/>
+		<result property="actionMoney" column="action_money"/>
+		<result property="actionScore" column="action_score"/>
+		<result property="recordStatusName" column="record_status_name"/>
+
+	</resultMap>
+	
+	<!-- 
+	 * 根据条件分页查询
+	 * userAccount ，完全匹配
+	 * recordNumber,罚单号
+	 * carNumber，车牌号
+	 * recordStatus，0：已缴费 1：未缴费 缴费状态
+	 * pageModel
+	 -->
+	<select id="queryAllByConditions" parameterType="map" resultMap="recordWrapperMap">
+		select
+		       record_id,
+		       record_number,
+		       user_account,
+		       car_number,
+		       action_id,
+		       action_name,
+		       action_money,
+		       action_score,
+		       location_id,
+		       location_name,
+		       record_status,
+		       record_status_name,
+		       record_detail,
+		       record_picture,
+		       create_time,
+		       modified_time
+		       from(
+		            select
+		                   record_id,
+		                   record_number,
+		                   user_account,
+		                   car_number,
+		                   action_id,
+		                   action_name,
+		                   action_money,
+		                   action_score,
+		                   location_id,
+		                   location_name,
+		                   record_status,
+		                   record_status_name,
+		                   record_detail,
+		                   record_picture,
+		                   create_time,
+		                   modified_time,
+		                   rownum rn
+		                   from(
+		                      select
+		                             record_id,
+		                             record_number,
+		                             user_account,
+		                             car_number,
+		                             action_id,
+		                             action_name,
+		                             action_money,
+		                             action_score,
+		                             location_id,
+		                             location_name,
+		                             record_status,
+		                             record_status_name,
+		                             record_detail,
+		                             record_picture,
+		                             create_time,
+		                             modified_time
+		                             from v$record
+						             <where>
+						             	<if test="userAccount != null">
+						             		user_account = #{userAccount}
+						             	</if>
+						             	<if test="recordNumber != null">
+						             		and record_number = #{recordNumber}
+						             	</if>
+						             	<if test="carNumber != null">
+						             		and car_number = #{carNumber}
+						             	</if>
+						             	<if test="recordStatus != null">
+						             		and record_status = #{recordStatus}
+						             	</if>
+						             </where>
+		                   )
+		       )where rn > (#{pageModel.pageNo}-1)*#{pageModel.pageSize}
+			   <![CDATA[and rn <= #{pageModel.pageNo}*#{pageModel.pageSize}]]>
+
+	</select>
+	
+	<!-- 
+	 * 条件查询的结果总数
+	 * userAccount ，完全匹配
+	 * recordNumber,罚单号
+	 * carNumber，车牌号
+	 * recordStatus，0：已缴费 1：未缴费 缴费状态
+	 -->
+	<select id="getCntByConditions" parameterType="map" resultType="int">
+		select count(0)
+		from v$record
+		<where>
+			<if test="userAccount != null">
+				user_account = #{userAccount}
+			</if>
+			<if test="recordNumber != null">
+				and record_number = #{recordNumber}
+			</if>
+			<if test="carNumber != null">
+				and car_number = #{carNumber}
+			</if>
+			<if test="recordStatus != null">
+				and record_status = #{recordStatus}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 
+	 * 添加违章记录
+	 * @param record
+	 * userAccount
+	 * carNumber
+	 * locationId
+	 * actionId
+	 * recordStatus ：初始为1,即未缴费
+	 * createTime
+	 -->
+	<insert id="addRecord" parameterType="Record">
+		insert into t_record(
+				record_id,
+				record_number,
+				user_account,
+				car_number,
+				action_id,
+				location_id,
+				record_status,
+				<if test="recordDetail != null">
+					record_detail,
+				</if>
+				<if test="picture != null">
+					record_picture,
+				</if>
+				create_time,
+				modified_time)
+       values(seq_record.nextval,
+       			substr(sys_guid(),0,12),
+       			#{userAccount},
+       			#{carNumber},
+       			#{actionId},
+       			#{locationId},
+       			#{recordStatus},
+				<if test="recordDetail != null">
+					#{recordDetail},
+				</if>
+				<if test="picture != null">
+					#{picture},
+				</if>
+       			sysdate,
+       			sysdate)
+	</insert>
+	
+	<!-- 
+	 * 根据id查违章记录
+	 * @param recordId
+	 -->
+	<select id="queryById" resultType="int" resultMap="recordWrapperMap">
+		select
+		       record_id,
+		       record_number,
+		       user_account,
+		       car_number,
+		       action_id,
+		       action_name,
+		       action_money,
+		       action_score,
+		       location_id,
+		       location_name,
+		       record_status,
+		       record_status_name,
+		       record_detail,
+		       record_picture,
+		       create_time,
+		       modified_time
+		       from v$record
+		       where record_id = #{recordId}
+	</select>
+	
+	<!-- 
+	 * 根据id修改记录状态
+	 * @param recordId
+	 * @param record_status
+	 -->
+	<update id="updateRecordStatusById" parameterType="map">
+		update t_record set
+		       record_status = #{recordStatus},
+		       modified_time = sysdate
+		       where record_id = #{recordId}
+	</update>
+</mapper>

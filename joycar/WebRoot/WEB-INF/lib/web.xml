@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" 
+	xmlns="http://java.sun.com/xml/ns/javaee" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+	http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+	<context-param>
+ 		 <param-name>contextConfigLocation</param-name>
+  		 <param-value>classpath:spring/applicationContext.xml</param-value>
+	</context-param>
+	<context-param>
+ 		 <param-name>log4jConfigLocation</param-name>
+  		 <param-value>classpath:mybatis/log4j.properties</param-value>
+	</context-param>
+	<!-- 
+	  监听器，会在服务器启动时优先执行，要配到最上方
+	 -->
+	<listener>
+ 		 <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+	</listener>
+	<listener>
+ 		 <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	
+  <!-- 登陆验证过滤器 -->
+  <filter>
+  	<filter-name>authorityFilter</filter-name>
+  	<filter-class>com.hexu.joycar.filter.AuthorityFilter</filter-class>
+  </filter>
+  <filter-mapping>
+  
+  	<filter-name>authorityFilter</filter-name> 
+    <!--  
+    	有可能访问  main.jsp  
+    	       deptAdd.jsp
+    	       deptAddServlet.do
+    	       xxx.css
+    	       ooo.js
+         只有当客户端访问.do结尾的url时authorityFilter和characterEncodingFilter才构成一个过滤链
+         
+         /*就是拦截所有的请求
+     -->
+  	
+  	<url-pattern>/*</url-pattern>
+  </filter-mapping> 
+	
+	<!-- 配置字符编码过滤器 -->
+	<filter>
+		<filter-name>characterEncodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>utf-8</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>characterEncodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	
+	
+	<servlet>
+  		<servlet-name>springmvc</servlet-name>
+  		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+  		 <init-param>
+  		     <param-name>contextConfigLocation</param-name>
+  		     <param-value>classpath:spring/spring-mvc.xml</param-value>
+  		 </init-param>
+  		 
+  		 <load-on-startup>1</load-on-startup>
+  	</servlet>	
+
+ 	 <servlet-mapping>
+  		<servlet-name>springmvc</servlet-name>
+  		<url-pattern>*.action</url-pattern>
+  	</servlet-mapping>	
+	
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+</web-app>
