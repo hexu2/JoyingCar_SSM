@@ -65,7 +65,10 @@ public class CarWrapper extends Car{
 		return "CarWrapper [carTypeName=" + carTypeName + ", checkStatusName="
 				+ checkStatusName + ", provinceName=" + provinceName + "]";
 	}
-	
+
+
+
+
 	
 
 }
